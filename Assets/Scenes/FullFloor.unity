@@ -264,9 +264,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8831efd0823b7d24fb150a04dcfa3473, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SalasMaximas: 8
-  MapSize: 50
-  habitaciones:
+  maxRooms: 7
+  mapSize: 10
+  rooms:
   - {fileID: 6604555325197407199, guid: d9fae9f5e21e8b443828da897baf6232, type: 3}
   - {fileID: 1179516460468670655, guid: 044a4c20137b3cd4f9ed85f023b72361, type: 3}
   - {fileID: 8756550295289844318, guid: fc628d73c7339214d97bbfb92a401eef, type: 3}
