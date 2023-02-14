@@ -290,15 +290,15 @@ public class FloorGenerator : MonoBehaviour
             {
                 if (roomNum < 2)
                 {
-                    elseRooms = new Room(Random.Range(2, 7));
+                    elseRooms = new Room(Random.Range(2, 6));
                 }
                 else if (roomNum == maxRooms - 1)
                 {
-                    elseRooms = new Room(7);
+                    elseRooms = new Room(6);
                 }
                 else
                 {
-                    elseRooms = new Room(Random.Range(2, 7));
+                    elseRooms = new Room(Random.Range(2, 6));
                 }
                 InsertByForce(elseRooms);
                 ClearNegatives();
@@ -408,7 +408,7 @@ public class Room
                     offsetY = new int[] { 0, 0, 0, 0 };
                     break;
                 }
-            case 7: // BossRoom
+            case 6: // BossRoom
                 {
                     shape = new int[,] { { id }, { id } };
                     offsetX = new int[] { 0, 0, 0, 0 };
