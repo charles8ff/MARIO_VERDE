@@ -11,20 +11,14 @@ public class FloorGenerator : MonoBehaviour
     public int maxRooms; // Maximum numbers of rooms allowed
     public int mapSize; // Size of the matrix that will attempt fo fit all rooms
     public GameObject[] rooms; // References to prefab rooms
-    int[,] layout = new int[10, 10]; // Layout attempted to fit into the matrix of size = mapSize
+    int[,] layout = new int[10, 10]; // Layout attempted to fit into the matrix of size = mapSize (default 10,10)
     int roomNum = 0; // Room number per floor
-    int failsCount = 0; // Fail counter
-   
-    int playerLvl = 1; // Player  level (unused)
-
-
+    int failsCount = 0; // Decides if this layout can or cannot accept more rooms
 
     /// Getters and Setters
     public int RoomNum { get => roomNum; set => roomNum = value; }
     public int[,] Layout { get => layout; set => layout = value; }
-    public int PlayerLvl { get => playerLvl; set => playerLvl = value; }
-
-
+    
     /// <summary>
     /// Empties the whole floor
     /// </summary>
@@ -39,41 +33,41 @@ public class FloorGenerator : MonoBehaviour
 
         }
     }
-
     /// <summary>
     /// Attempts to insert a room in the floor randomly
     /// </summary>
     /// <param name="room"> Prefab Room to insert </param>
-    public void InsertByForce(Room room)
+    public void InsertRoom(Room room)
     {
         Room auxRoom = new Room(room.Id); // Aux room that gets saved in case we need 2 flip
         int coordX = 0; // Position in X-axis of the matrix
         int coordY = 0; // Position in Y-axis of the matrix
         bool validPosFlag = false; // Flag to check if we can place a room in that position
         int tries = 0; // Tries to insert
+
         while (!validPosFlag && tries < 10) // Will try until is valid or 10 tries
         {
             // Find a door (-1 cell in the matrix ) 
             coordX = Random.Range(0, mapSize);
             coordY = Random.Range(0, mapSize);
             validPosFlag = true;
-            while (layout[coordY, coordX] != -1)
+            while (layout[coordX, coordY] != -1)
             {
                 coordX = Random.Range(0, mapSize);
                 coordY = Random.Range(0, mapSize);
             }
             // Checks if room has same index than next room
             if (coordY + 1 <= mapSize - 1)
-                if (layout[coordY + 1, coordX] == room.Id)
+                if (layout[coordX, coordY + 1] == room.Id)
                     validPosFlag = false;
             if (coordY - 1 >= mapSize - 1)
-                if (layout[coordY - 1, coordX] == room.Id)
+                if (layout[coordX , coordY - 1] == room.Id)
                     validPosFlag = false;
             if (coordX + 1 <= mapSize - 1)
-                if (layout[coordY, coordX + 1] == room.Id)
+                if (layout[coordX + 1, coordY] == room.Id)
                     validPosFlag = false;
             if (coordX - 1 >= mapSize - 1)
-                if (layout[coordY, coordX - 1] == room.Id)
+                if (layout[coordX - 1, coordY] == room.Id)
                     validPosFlag = false;
             tries++;
         }
@@ -82,22 +76,22 @@ public class FloorGenerator : MonoBehaviour
         {
 
             int[,] aux = layout.Clone() as int[,]; // Copy of matrix in case of missposition
-            bool error = false;
-            bool validPos = false;
+            bool error = false; // 
+            bool validFlag = false; // 
             int flipsCount = 0;
-            int[] BruteForce;
+            int[] ValidPosotions;
             int triesCount = 0;
             // While it could not place the room and it has flipped less than 2 times
-            while (!validPos && flipsCount < 2)
+            while (!validFlag && flipsCount < 2)
             {
                 GameObject rooms = null;
-                BruteForce = room.insertarFuerzaBruta(true); //Primera casilla de la sala a insertar
-                validPos = true;
-                while ((triesCount <= 5 && !error) && BruteForce[0] != 99)
+                ValidPosotions = room.buildRoomMatrix(true); // First one to insert
+                validFlag = true;
+                while ((triesCount <= 5 && !error) && ValidPosotions[0] != 99)
                 {
-                    //AQUI COLOCA LA SALA EN LAS CASILLAS COMPROBANDO QUE NO COLISIONA CON NADA, USANDO LA PRIMERA CASILLA COMO PIVOTE PARA COLOCAR EL RESTO
-                    int i = coordY + BruteForce[0];
-                    int j = coordX + BruteForce[1];
+                    // We place the room checking for the other tiles that may be filled
+                    int i = coordX + ValidPosotions[0];
+                    int j = coordY + ValidPosotions[1];
                     if (i < layout.GetLength(0) && i > 0 && j < layout.GetLength(1) && j > 0)
                     {
                         if (layout[i, j] <= 0)
@@ -118,16 +112,16 @@ public class FloorGenerator : MonoBehaviour
                                     if (layout[i, j - 1] == room.Id)
                                         error = true;
                             }
-                            if (rooms == null && BruteForce[4] == 1) //si ha conseguido insertar todas las casillas en la matriz, crea la sala en el juego en dicha posición
+                            if (rooms == null && ValidPosotions[4] == 1) // si ha conseguido insertar todas las casillas en la matriz, crea la sala en el juego en dicha posición
                             {
-                                rooms = Instantiate(this.rooms[room.Id - 1], new Vector3(room.OffsetX[flipsCount] + (22 * j), room.OffsetY[flipsCount] + (22 * -i), 0), Quaternion.Euler(0, 90 * flipsCount, 0));
+                                rooms = Instantiate(this.rooms[room.Id ], new Vector3(room.OffsetX[flipsCount] + (11 * i), room.OffsetY[flipsCount] + (11 * -j), 0), Quaternion.identity); // Hay que fundirse este offset
                                 rooms.name = "Room " + room.Id;
                                 rooms.transform.parent = gameObject.transform;
                             }
                             layout[i, j] = room.Id;
-                            BruteForce = room.insertarFuerzaBruta(false, new int[] { BruteForce[2], BruteForce[3] });
+                            ValidPosotions = room.buildRoomMatrix(false, new int[] { ValidPosotions[2], ValidPosotions[3] });
 
-                            validPos = true;
+                            validFlag = true;
                         }
                         else
                         {
@@ -143,14 +137,11 @@ public class FloorGenerator : MonoBehaviour
                     {
                         Destroy(rooms);
                         layout = aux.Clone() as int[,];
-                        validPos = false;
+                        validFlag = false;
                         triesCount++;
                         room.Shape = auxRoom.Shape.Clone() as int[,];
-                        // FuerzaBruta = sala.insertarFuerzaBruta(true);
                     }
                 }
-
-
                 room.Shape = auxRoom.Shape.Clone() as int[,];
                 triesCount = 0;
                 error = false;
@@ -158,7 +149,7 @@ public class FloorGenerator : MonoBehaviour
                 auxRoom.flipRoom(); // Flips Aux Room
                 flipsCount+=2;
             }
-            if (validPos) // Si consigue colocar la sala, aumenta el contador total y resetea los fallos
+            if (validFlag) // Si consigue colocar la sala, aumenta el contador total y resetea los fallos
             {
                 roomNum++;
                 failsCount = 0;
@@ -169,7 +160,7 @@ public class FloorGenerator : MonoBehaviour
     }
     /// <summary>
     /// Inserts first room (Room0Start) into the matrix
-    /// Works like InsertByForce()
+    /// Works like InsertRoom()
     /// </summary>
     /// <param name="room"> Room Prefab to insert </param>
     public void InsertFirstRoom(Room room)
@@ -179,33 +170,33 @@ public class FloorGenerator : MonoBehaviour
         int posicionX = Random.Range(0, mapSize);
         int posicionY = Random.Range(0, mapSize);
         int[,] aux = layout.Clone() as int[,];
-        int i = posicionY - 1;
-        int j = posicionX - 1;
+        int i = posicionX - 1;
+        int j = posicionY - 1;
         bool error = false;
         bool placedSuccess = false;
-        int flipTries = 0;
-        while (!placedSuccess && flipTries < 1)
+        
+        while (!placedSuccess)
         {
             placedSuccess = true;
-            while (i < (posicionY + firstRoom.GetLength(0) - 1) && !error)
+            while (i < (posicionX + firstRoom.GetLength(0) - 1) && !error)
             {
-                while (j < (posicionX + firstRoom.GetLength(1) - 1) && !error)
+                while (j < (posicionY + firstRoom.GetLength(1) - 1) && !error)
                 {
                     if (i >= 0 && i < layout.GetLength(0) && j >= 0 && j < layout.GetLength(1))
                     {
                         if (layout[i, j] <= 0)
                         {
 
-                            layout[i, j] = firstRoom[i - posicionY + 1, j - posicionX + 1];
+                            layout[i, j] = firstRoom[i - posicionX + 1, j - posicionY + 1];
 
-                            if (firstRoom[i - posicionY + 1, j - posicionX + 1] > 0)
+                            if (firstRoom[i - posicionX + 1, j - posicionY + 1] > 0)
                             {
-                                GameObject newRoom = Instantiate(rooms[0], new Vector3((22 * j), (22 * -i), 0), Quaternion.identity);
-                                newRoom.name = "Start";
+                                GameObject newRoom = Instantiate(rooms[0], new Vector3(0, 0, 0), Quaternion.identity); // First room on 0,0
+                                newRoom.name = "StartingRoom";
                                 newRoom.transform.parent = gameObject.transform;
                             }
                         }
-                        else if (firstRoom[i - posicionY + 1, j - posicionX + 1] > 0)
+                        else if (firstRoom[i - posicionX + 1, j - posicionY + 1] > 0)
                         {
                             error = true;
                             layout = aux.Clone() as int[,];
@@ -214,7 +205,7 @@ public class FloorGenerator : MonoBehaviour
                     }
                     else
                     {
-                        if (firstRoom[i - posicionY + 1, j - posicionX + 1] > 0)
+                        if (firstRoom[i - posicionX + 1, j - posicionY + 1] > 0)
                         {
                             error = true;
                             layout = aux.Clone() as int[,];
@@ -223,13 +214,9 @@ public class FloorGenerator : MonoBehaviour
                     }
                     j++;
                 }
-                j = posicionX - 1;
+                j = posicionY - 1;
                 i++;
             }
-
-            room.flipRoom();
-            firstRoom = room.Shape.Clone() as int[,];
-            flipTries++;
         }
     }
 
@@ -268,14 +255,13 @@ public class FloorGenerator : MonoBehaviour
                     if (j + 1 < layout.GetLength(1) && layout[i, j + 1] <= 0)
                         layout[i, j + 1] += -1;
                 }
-
             }
         }
     }
     // Start is called before the first frame update
     void Start()
     {
-        roomNum = 
+        roomNum = 0;
         failsCount = 0; // Fail counter for this matrix
         layout = new int[mapSize, mapSize]; // Space available ingame
         while (RoomNum < maxRooms)
@@ -300,11 +286,11 @@ public class FloorGenerator : MonoBehaviour
                 {
                     elseRooms = new Room(Random.Range(2, 6));
                 }
-                InsertByForce(elseRooms);
-                ClearNegatives();
-                BuildDoorMesh();
+                InsertRoom(elseRooms);
+                // ClearNegatives();
+                // BuildDoorMesh();
             }
-            if (failsCount == 50)//Si falla 50 veces borro todas las salas 
+            if (failsCount == 50) // When 50 tries fail, Delete all rooms
             {
                 foreach (Transform child in transform)
                 {
@@ -312,39 +298,20 @@ public class FloorGenerator : MonoBehaviour
                 }
             }
         }
-        // StartCoroutine(cargarCompleto());//Tapa la camara un par de segundos mientras que cargan los resources
+        // StartCoroutine(loadAll()); // Covers Camera for 2s while loading everything
     }
     /// <summary>
-    /// Desabilita la camara durante dos segundos
+    /// Covers Camera for 2s while loading everything
     /// </summary>
     /// <returns></returns>
-    IEnumerator cargarCompleto()
+    IEnumerator loadAll()
     {
-        GameObject.Find("Jugador").transform.Find("MainCamera").GetComponent<Camera>().enabled = false;
+        GameObject.Find("Player").transform.Find("MainCamera").GetComponent<Camera>().enabled = false;
         GameObject.Find("HUD").GetComponent<Canvas>().enabled = false;
         yield return new WaitForSeconds(2);
-        GameObject.Find("Jugador").transform.Find("MainCamera").GetComponent<Camera>().enabled = true;
+        GameObject.Find("Player").transform.Find("MainCamera").GetComponent<Camera>().enabled = true;
         GameObject.Find("HUD").GetComponent<Canvas>().enabled = true;
     }
-
- /// <summary>
- /// Cuando terminas un nivel suma uno al contador, borra todas las salas y vuelve a comenzar
- /// </summary>
- /// 
- /*
-    public void Lyoko()
-    {
-     
-        playerLvl++;
-        // DatosMuerte.Nivel = nivel;
-        foreach (Transform child in transform)
-        {
-            GameObject.Destroy(child.gameObject);
-        }
-        Start();
-    }
- */
-
 
 }
 
@@ -382,51 +349,83 @@ public class Room
             case 1:
             case 5:
                 {
-                    shape = new int[,] { { id } };
+                    shape = new int[,] {    {   0,  0,  0,  0,  0   },
+                                            {   0,  id, id, id, 0   },
+                                            {   -1, id, id, id, -1  },
+                                            {   0,  id, id, id, 0   },
+                                            {   0,  0,  -1, 0,  0   }
+                    };
                     offsetX = new int[] { 0, 0, 0, 0 };
                     offsetY = new int[] { 0, 0, 0, 0 };
                     break;
                 }
             case 2: // Room2
                 {
-                    shape = new int[,] { { id, id } };
+                    shape = new int[,] {    {   0,  0,  0,  0,  0,  0,  0   },
+                                            {   0,  id, id, id, id, id, 0   },
+                                            {   -1, id, id, id, id, id, 0   },
+                                            {   0,  id, id, id, id, id, 0   },
+                                            {   0,  0,  0,  0,  -1, 0,  0   }
+                    };
                     offsetX = new int[] { 0, 0, 0, 0 };
                     offsetY = new int[] { 0, 0, 0, 0 };
                     break;
                 }
             case 3: // Room3
                 {
-                    shape = new int[,] { { id, 0 }, { id, id } };
+                    shape = new int[,] {    {   0,  0,  0,  0,  0,  0   },
+                                            {   0,  id, id, 0,  0,  0   },
+                                            {   0,  id, id, -1, 0,  0   },
+                                            {   0,  id, id, 0,  0,  0   },
+                                            {   0,  id, id, id, id, 0   },
+                                            {   0,  id, id, id, id, -1  },
+                                            {   0,  id, id, id, id, 0   },
+                                            {   0,  0,  0,  0,  0,  0   }
+                    };
                     offsetX = new int[] { 0, 0, 0, 0 };
                     offsetY = new int[] { 0, 0, 0, 0 };
                     break;
                 }
             case 4: // Room4 
                 {
-                    shape = new int[,] { { id }, { id } };
+                    shape = new int[,] {    {   0,  -1, 0   },
+                                            {   0,  id, 0   },
+                                            {   0,  id, 0   },
+                                            {   0,  id, 0   },
+                                            {   0,  id, 0   },
+                                            {   0,  -1, 0   }
+                    };
                     offsetX = new int[] { 0, 0, 0, 0 };
                     offsetY = new int[] { 0, 0, 0, 0 };
                     break;
                 }
             case 6: // BossRoom
                 {
-                    shape = new int[,] { { id }, { id } };
+                    shape = new int[,] {    {   0,  0,  0,  0,  0   },
+                                            {   0,  id, id, id, 0   },
+                                            {   0,  id, id, id, 0   },
+                                            {   0,  0,  id, 0,  0   },
+                                            {   0,  0,  id, 0,  0   },
+                                            {   0,  0,  -1, 0,  0   }
+
+                    };
                     offsetX = new int[] { 0, 0, 0, 0 };
                     offsetY = new int[] { 0, 0, 0, 0 };
                     break;
                 }
         }
-        getRoomDoors(); // This will track the doors between rooms
+        // getRoomDoors(); // This will track the doors between rooms
     }
 
     /// <summary>
     /// This will build a mesh to track where the doors are 
     /// so other parts can keep track and place things accordingly
     /// </summary>
-    private void getRoomDoors()
+    /// 
+    /* private void getRoomDoors()
     {
 
-        int[,] aux = new int[shape.GetLength(0) + 2, shape.GetLength(1) + 2];
+        int[,] aux = new int[shape.GetLength(0), shape.GetLength(1)];
         for (int i = 1; i <= shape.GetLength(0); i++)
         {
             for (int j = 1; j <= shape.GetLength(1); j++)
@@ -454,7 +453,7 @@ public class Room
 
             }
         }
-    }
+    }*/
 
     /// <summary>
     /// Transpose a Room (Flip it, but with matrix)
@@ -475,40 +474,40 @@ public class Room
 
 
     /// <summary>
-    /// Metodo que controla el pivote de la sala para controlar la casilla que se debe insertar de cada sala en la matriz
+    /// Method that keeps track of the pivot of a room to check for a tile in the matrix
     /// </summary>
-    /// <param name="primero">Controla si es la primera casilla</param>
-    /// <param name="pos">posición de pivote</param>
-    /// <returns>retorna la posición respecto a la primera casilla que ha de colocarse</returns>
-    public int[] insertarFuerzaBruta(bool primero, int[] pos = null)
+    /// <param name="first"> Flag for first room </param>
+    /// <param name="pos">pivot position </param>
+    /// <returns> position from first room </returns>
+    public int[] buildRoomMatrix(bool first, int[] pos = null)
     {
         int[] posTotal = new int[5];
-        int posX = Random.Range(0, Shape.GetLength(1));
-        int posY = Random.Range(0, Shape.GetLength(0));
-        if (primero)
+        int posX = Random.Range(0, Shape.GetLength(0));
+        int posY = Random.Range(0, Shape.GetLength(1));
+        if (first)
         {
-            while (shape[posY, posX] != -1)
+            while (shape[posX, posY] != -1)
             {
-                posX = Random.Range(0, Shape.GetLength(1));
-                posY = Random.Range(0, Shape.GetLength(0));
+                posX = Random.Range(0, Shape.GetLength(0));
+                posY = Random.Range(0, Shape.GetLength(1));
             }
 
             for (int i = -1; i < 2; i++)
             {
                 for (int j = -1; j < 2; j++)
                 {
-                    if (i + posY < shape.GetLength(0) && i + posY > 0 && j + posX < shape.GetLength(1) && j + posX > 0)
-                        if (shape[posY + i, posX + j] == id && (i == 0 || j == 0) && primero)
+                    if (i + posX < shape.GetLength(0) && i + posX > 0 && j + posY < shape.GetLength(1) && j + posY > 0)
+                        if (shape[posX + i, posY + j] == id && (i == 0 || j == 0) && first)
                         {
-                            posY += i;
-                            posX += j;
-                            shape[posY, posX] = 0;
+                            posX += i;
+                            posY += j;
+                            shape[posX, posY] = 0;
                             posTotal[0] = 0;
                             posTotal[1] = 0;
-                            posTotal[2] = posY;
-                            posTotal[3] = posX;
-                            posTotal[4] = 1; //Boleana que controla si es la primera de todas o no.
-                            primero = false;
+                            posTotal[2] = posX;
+                            posTotal[3] = posY;
+                            posTotal[4] = 1; // Boleana que controla si es la primera de todas o no.
+                            first = false;
 
 
                         }
@@ -520,7 +519,7 @@ public class Room
             {
                 for (int j = 0; j < shape.GetLength(1); j++)
                 {
-                    if (shape[i, j] == id && (i != posY || j != posX) && ((i < posY) || ((j < posX) && (i == posY))))
+                    if (shape[i, j] == id && (i != posX || j != posY) && ((i < posX) || ((j < posY) && (i == posX))))
                     {
                         posTotal[4] = 0;
                     }
@@ -530,22 +529,22 @@ public class Room
         }
         else
         {
-            posX = pos[1];
-            posY = pos[0];
+            posX = pos[0];
+            posY = pos[1];
 
             for (int i = 1; i < shape.GetLength(0); i++)
             {
                 for (int j = 1; j < shape.GetLength(1); j++)
                 {
-                    if (shape[i, j] == id && !primero)
+                    if (shape[i, j] == id && !first)
                     {
-                        posTotal[0] = i - posY;
-                        posTotal[1] = j - posX;
-                        posTotal[2] = posY;
-                        posTotal[3] = posX;
+                        posTotal[0] = i - posX;
+                        posTotal[1] = j - posY;
+                        posTotal[2] = posX;
+                        posTotal[3] = posY;
                         posTotal[4] = 1;
                         shape[i, j] = 0;
-                        primero = true;
+                        first = true;
                     }
                 }
             }

@@ -218,6 +218,7 @@ GameObject:
   - component: {fileID: 1344798730}
   - component: {fileID: 1344798729}
   - component: {fileID: 1344798731}
+  - component: {fileID: 1344798732}
   m_Layer: 0
   m_Name: GameDirector
   m_TagString: Untagged
@@ -264,8 +265,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8831efd0823b7d24fb150a04dcfa3473, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxRooms: 7
-  mapSize: 10
+  maxRooms: 8
+  mapSize: 200
   rooms:
   - {fileID: 6604555325197407199, guid: d9fae9f5e21e8b443828da897baf6232, type: 3}
   - {fileID: 1179516460468670655, guid: 044a4c20137b3cd4f9ed85f023b72361, type: 3}
@@ -274,3 +275,15 @@ MonoBehaviour:
   - {fileID: 2212751690803015756, guid: ad1218fc38423cf4ebf23d878bb7a469, type: 3}
   - {fileID: 5670269294670983051, guid: 98a4ee7c6d72d26458c3d664b6fa4f3c, type: 3}
   - {fileID: 796824390922665456, guid: ce4df861e9643ad40ad152b8b649c3fc, type: 3}
+--- !u!114 &1344798732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1344798728}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 829bb076aac5d3749810db29bb9173ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
