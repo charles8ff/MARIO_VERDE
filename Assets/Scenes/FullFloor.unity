@@ -268,13 +268,13 @@ MonoBehaviour:
   maxRooms: 8
   mapSize: 200
   rooms:
-  - {fileID: 6604555325197407199, guid: d9fae9f5e21e8b443828da897baf6232, type: 3}
-  - {fileID: 1179516460468670655, guid: 044a4c20137b3cd4f9ed85f023b72361, type: 3}
-  - {fileID: 8756550295289844318, guid: fc628d73c7339214d97bbfb92a401eef, type: 3}
-  - {fileID: 2869646035927473537, guid: 88b594d2ead91af4e981359398754c8f, type: 3}
-  - {fileID: 2212751690803015756, guid: ad1218fc38423cf4ebf23d878bb7a469, type: 3}
-  - {fileID: 5670269294670983051, guid: 98a4ee7c6d72d26458c3d664b6fa4f3c, type: 3}
-  - {fileID: 796824390922665456, guid: ce4df861e9643ad40ad152b8b649c3fc, type: 3}
+  - {fileID: 7321285923500845163, guid: d9fae9f5e21e8b443828da897baf6232, type: 3}
+  - {fileID: 1823632207671818154, guid: 044a4c20137b3cd4f9ed85f023b72361, type: 3}
+  - {fileID: 2729980503015664031, guid: fc628d73c7339214d97bbfb92a401eef, type: 3}
+  - {fileID: 7417043460820124628, guid: 88b594d2ead91af4e981359398754c8f, type: 3}
+  - {fileID: 1377065416878855749, guid: ad1218fc38423cf4ebf23d878bb7a469, type: 3}
+  - {fileID: 883274770003532510, guid: 98a4ee7c6d72d26458c3d664b6fa4f3c, type: 3}
+  - {fileID: 6559199198254718222, guid: ce4df861e9643ad40ad152b8b649c3fc, type: 3}
 --- !u!114 &1344798732
 MonoBehaviour:
   m_ObjectHideFlags: 0

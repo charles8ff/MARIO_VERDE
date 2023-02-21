@@ -345,11 +345,22 @@ public class Room
         // This chooses
         switch (id)
         {
-            case 0: // Room0Start & Room1 & Room5
-            case 1:
-            case 5:
+            case 0: // Room0Start
                 {
                     shape = new int[,] {    {   0,  0,  0,  0,  0   },
+                                            {   0,  id, id, id, 0   },
+                                            {   -1, id, id, id, -1  },
+                                            {   0,  id, id, id, 0   },
+                                            {   0,  0,  -1, 0,  0   }
+                    };
+                    offsetX = new int[] { 0, 0, 0, 0 };
+                    offsetY = new int[] { 0, 0, 0, 0 };
+                    break;
+                }
+            case 1: //  Room1 & Room5
+            case 5:
+                {
+                    shape = new int[,] {    {   0,  0,  -1,  0,  0   },
                                             {   0,  id, id, id, 0   },
                                             {   -1, id, id, id, -1  },
                                             {   0,  id, id, id, 0   },
